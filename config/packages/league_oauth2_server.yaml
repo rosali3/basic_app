@@ -1,0 +1,17 @@
+league_oauth2_server:
+    authorization_server:
+        private_key: '%env(resolve:OAUTH_PRIVATE_KEY)%'
+        private_key_passphrase: '%env(resolve:OAUTH_PASSPHRASE)%'
+        encryption_key: '%env(resolve:OAUTH_ENCRYPTION_KEY)%'
+    resource_server:
+        public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%'
+    scopes:
+        available: [ 'ROLE_USER', 'ROLE_USER' ] # все роли которые есть в системе
+        default: [ 'ROLE_USER' ] # дефолтная роль при регистрации
+    persistence:
+        doctrine: null
+
+when@test:
+    league_oauth2_server:
+        persistence:
+            in_memory: null
