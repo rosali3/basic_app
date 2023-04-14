@@ -1,6 +1,10 @@
 <?php
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 // use App\Repository\ImageRepository;
 use ApiPlatform\Metadata\ApiResource;
@@ -48,12 +52,14 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     ],
     normalizationContext: ['groups' => ['media_object:read']]
 )]
+#[ApiFilter(NumericFilter::class, properties: ['id'])]
+#[ApiFilter(DateFilter::class, properties: ['created_at'])]
+#[ApiFilter(OrderFilter::class, properties: ['id', 'created_at'], arguments: ['orderParameterName' => 'order'])]
 
 class Image extends BaseEntity
 {
-    #[ORM\Column(type: "string", length: 255)]
-    private ?string $name = null;
-
+    //#[ORM\Column(type: "string", length: 255)]
+    //private ?string $name = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'])]
     #[Groups(['media_object:read'])]
@@ -63,14 +69,12 @@ class Image extends BaseEntity
     #[Assert\NotNull(groups: ['media_object_create'])]
     public ?File $file = null;
 
-    #[ORM\Column(nullable: true)]
-    public ?string $filePath = null;
-
+    //#[ORM\Column(nullable: true)]
+    //public ?string $filePath = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'image')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
-
 
     // наследуемые геттеры  и сеттеры (обработчики)
     public function getId(): ?int
@@ -113,18 +117,15 @@ class Image extends BaseEntity
     {
         return $this->updatedAt;
     }
+    //
+    //public function getRelation(): ?User
+    //{
+    //    return $this->user;
+    //}
 
-
-
-    public function getRelation(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setRelation(?User $relation): self
-    {
-        $this->user = $relation;
-
-        return $this;
-    }
+    //public function setRelation(?User $relation): self
+    //{
+    //    $this->user = $relation;
+//        return $this;
+  //  }
 }

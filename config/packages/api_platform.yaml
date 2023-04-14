@@ -1,4 +1,15 @@
 api_platform:
+  defaults:
+      pagination_client_items_per_page: true
+  collection:
+      pagination:
+        items_per_page_parameter_name: itemsPerPage # Default value
+  formats:
+    json: [ 'application/json' ]
+    jsonld: [ 'application/ld+json' ]
+    html: [ 'text/html' ]
+    multipart: [ 'multipart/form-data' ]
+
   oauth:
     # To enable or disable OAuth.
     enabled: true

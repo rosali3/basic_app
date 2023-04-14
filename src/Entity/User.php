@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Delete;
@@ -23,33 +27,37 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource
 
-(types: ['https://schema.org/Book'],
-    //normalizationContext: ['groups' => ['book:read']],
-    //denormalizationContext: ['groups' => ['book:write']],
-operations: [
-    new Post(
-        uriTemplate: 'user/register',
-        controller: RegistrationController::class,
-        denormalizationContext: ['groups' => 'createUser']
-    ),
-    new Get (
-        uriTemplate: 'users/get-current',
-        controller: GetCurrentController::class,
-        normalizationContext: ['groups' => 'image'],
-        denormalizationContext: ['groups' => 'find'],
-        security: 'is_granted ("ROLE_ADMIN")'
-    ),
-    new GetCollection(
-        uriTemplate: 'api/images/user',
-        //controller: TaskController::class,
-        normalizationContext: ['groups' => 'image'],
-        security: 'is_granted ("ROLE_USER")',
-    ),
-    new Delete(),
-    new Patch()
-])]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']],
+    operations: [
+        new Post(
+            uriTemplate: 'user/register',
+            controller: RegistrationController::class,
+            denormalizationContext: ['groups' => 'createUser']
+                ),
+        new Get (
+            uriTemplate: 'users/get-current',
+            //controller: GetCurrentController::class,
+            normalizationContext: ['groups' => 'image'],
+            denormalizationContext: ['groups' => 'find'],
+            //security: 'is_granted ("ROLE_ADMIN")'
+                ),
+        new GetCollection(
+            //uriTemplate: 'api/images/user',
+            //controller: TaskController::class,
+            //normalizationContext: ['groups' => 'image'],
+            //security: 'is_granted ("ROLE_USER")',
+                        ),
+        new Delete(),
+        new Patch()
+                ]
+            )
+]
+#[ApiFilter(NumericFilter::class, properties: ['id'])]
+#[ApiFilter(DateFilter::class, properties: ['created_at'])]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['id', 'created_at'], arguments: ['orderParameterName' => 'order'])]
 
 class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -68,11 +76,13 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
     private ?string $password = null;
 
 //    #[ORM\OneToMany(mappedBy: "User", targetEntity: Image::class, orphanRemoval: true)]
+    #[ORM\Column]
     #[ORM\ManyToOne(targetEntity: Image::class)]
-    #[ORM\JoinColumn(nullable: true)]
-    #[Groups('image')]
-    #[ApiProperty(types: ['https://schema.org/image'])]
-    public ?Image $image = null;
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups('read', 'write')]
+    #[ApiProperty(types: ['https://schema.org/image'])] //attributes:"openapi_context":"type"="string"
+   public ?string $cover = null;
+
 
     public function getId(): ?int
     {
@@ -109,9 +119,12 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
+        $user = new User();
+        $roles = $user->getRoles();
 
         return array_unique($roles);
     }
+
 
     public function setRoles(array $roles): self
     {
@@ -166,5 +179,9 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
     public function dateUpdate(): void
     {
         $this->updatedAt = new \DateTime();
+    }
+    public function __toString()
+    {
+        return $this->email;
     }
 }
