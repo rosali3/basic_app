@@ -57,13 +57,13 @@ class ImageResize
         }
     }
 
-    //public function onBeforeResize($callable)
-    //{
-    //    $this->beforeResizeCallable = $callable;
-    //}
+    public function onBeforeResize($callable)
+    {
+        $this->beforeResizeCallable = $callable;
+    }
 
-    //public function onAfterResize($callable)
-    //{
-    //    $this->afterResizeCallable = $callable;
-    //}
+    public function onAfterResize($callable)
+    {
+        $this->afterResizeCallable = $callable;
+    }
 }

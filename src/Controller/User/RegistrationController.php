@@ -8,6 +8,7 @@ use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -23,7 +24,7 @@ final class RegistrationController extends AbstractController
     {
     }
 
-    public function __invoke(User $userRequest, $request, FileUploader $fileUploader, $user): user
+    public function __invoke(User $user, Request $request, FileUploader $fileUploader): Image
     {
         $user->setRoles(['ROLE_USER']);
         $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()));
@@ -34,12 +35,12 @@ final class RegistrationController extends AbstractController
 
         // create a new entity and set its values
         //$superhero = new superheroes();
-        $userRequest = new Image();
-        $userRequest->email = $request->get('email');
-        $userRequest->updated_at = $request->get('updated_at');
-        $userRequest->created_at = $request->get('created_at');
+        $user = new Image();
+        $user->email = $request->get('email');
+        $user->updated_at = $request->get('updated_at');
+        $user->created_at = $request->get('created_at');
 
-        $userRequest->cover = $fileUploader->upload($uploadedFile);
+        $user->cover = $fileUploader->upload($uploadedFile);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
 use App\Controller\User\GetCurrentController;
 use App\Controller\User\RegistrationController;
 use App\Repository\UserRepository;
@@ -23,20 +24,40 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Json;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 
 #[ApiResource(
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']],
     operations: [
         new Post(
             uriTemplate: 'user/register',
             controller: RegistrationController::class,
-            denormalizationContext: ['groups' => 'createUser']
-                ),
+            openapi: new Model\Operation(
+                        requestBody: new Model\RequestBody (
+                            //description: => "Create a new Users",
+                            content: new Json([
+                                'multipart/form-data' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => array(
+                            'type' => 'string',
+                            'format' => 'binary',
+                            'description' => "Create a new Users"),
+                        'image' => [
+                                'type' => 'integer',
+                                'format' => 'binary',
+                                'description' => "The picture",]],], //schema closing
+                                    ],]), // application json closing
+),//requestBody
+),
+            denormalizationContext: ['groups' => 'createUser'],
+            // validationContext: ['groups' => ['Default', 'media_object_create']],
+            deserialize: false, //openapi
+), //post
         new Get (
             uriTemplate: 'users/get-current',
             //controller: GetCurrentController::class,
@@ -52,7 +73,9 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
                         ),
         new Delete(),
         new Patch()
-                ]
+                ],
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
             )
 ]
 #[ApiFilter(NumericFilter::class, properties: ['id'])]
